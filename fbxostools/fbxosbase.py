@@ -213,8 +213,8 @@ class FbxConfiguration:
         """ Indicate whether registration params look initialized """
         log('>>> has_registration_params')
         if (self._reg_params and
-                self._reg_params.get('track_id') is not None and
-                self._reg_params.get('app_token') is not ''):
+                self._reg_params.get('track_id') != None and
+                self._reg_params.get('app_token') != ''):
             return True
         else:
             return False
@@ -320,10 +320,10 @@ class FbxResponse:
         # expected content checks
         if self._resp.get('success') is None:
             raise FbxException('Mandatory field missing: success')
-        elif self._resp.get('success') is not True and self._resp['success'] is not False:
+        elif self._resp.get('success') != True and self._resp['success'] != False:
             raise FbxException('Field success must be either true or false')
 
-        if self._resp['success'] is False:
+        if self._resp['success'] == False:
             if self._resp.get('msg') is None:
                 raise FbxException('Mandatory error field missing: msg')
             if self._resp.get('error_code') is None:
@@ -380,7 +380,7 @@ class FbxHttp():
     def headers(self):
         """Build headers"""
         h = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        if self._session_token is not None:
+        if self._session_token != None:
             h['X-Fbx-App-Auth'] = self._session_token
         return h
 
@@ -396,7 +396,7 @@ class FbxHttp():
             url,
             verify=self._certificates_file,
             headers=self.headers,
-            timeout=timeout if timeout is not None else self._http_timeout)
+            timeout=timeout if timeout != None else self._http_timeout)
         log('GET response: {}'.format(r.text))
         return r
 
@@ -444,7 +444,7 @@ class FbxHttp():
             verify=self._certificates_file,
             data=jdata,
             headers=self.headers,
-            timeout=timeout if timeout is not None else self._http_timeout)
+            timeout=timeout if timeout != None else self._http_timeout)
         log('PUT response: {}'.format(r.text))
 
         # ensure status_code is 200, else raise exception
@@ -466,7 +466,7 @@ class FbxHttp():
             verify=self._certificates_file,
             data=jdata,
             headers=self.headers,
-            timeout=timeout if timeout is not None else self._http_timeout)
+            timeout=timeout if timeout != None else self._http_timeout)
         log('POST response: {}'.format(r.text))
         return r
 
@@ -516,7 +516,7 @@ class FbxHttp():
             verify=self._certificates_file,
             data=jdata,
             headers=self.headers,
-            timeout=timeout if timeout is not None else self._http_timeout)
+            timeout=timeout if timeout != None else self._http_timeout)
         log('DELETE response: {}'.format(r.text))
 
         # ensure status_code is 200, else raise exception
