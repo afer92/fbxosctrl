@@ -1265,14 +1265,14 @@ class FreeboxOSCli:
             action='store_true',
             help='display the list of port forwardings info')
 
-        """
-        #### TODO:    START - Arguments to implement
         group.add_argument(   # TODO: implement ...
             '--delete-all-pfwds',
             default=argparse.SUPPRESS,
             #dest='ports_list',
             action='store_true',
             help='delete all port forwardings')
+        """
+        #### TODO:    START - Arguments to implement
         #self._parser.add_argument( '-c', nargs=1, dest='conf_path', default='.', help=...')
         group.add_argument(   # TODO: implement ...
             #'--delete-pfwds',
@@ -1391,14 +1391,14 @@ class FreeboxOSCli:
             'dhcpstleases': self._ctrl.srv_dhcp.get_static_leases,
 
             'pfwd': self._ctrl.srv_port.get_port_forwardings,
-            'add-pfwds': self._ctrl.srv_port.add_port_forwardings,
+            'add_pfwds': self._ctrl.srv_port.add_port_forwardings,
 
-            'delete-pfwds': self._ctrl.srv_port.delete_port_forwardings,
-            'delete-all-pfwds': self._ctrl.srv_port.delete_all_port_forwardings,
-            'disable-pfwds': self._ctrl.srv_port.disable_port_forwardings,
-            'disable-all-pfwds': self._ctrl.srv_port.disable_all_port_forwardings,
-            'enable-pfwds': self._ctrl.srv_port.enable_port_forwardings,
-            'enable-all-pfwds': self._ctrl.srv_port.enable_all_port_forwardings,
+            'delete_pfwds': self._ctrl.srv_port.delete_port_forwardings,
+            'delete_all_pfwds': self._ctrl.srv_port.delete_all_port_forwardings,
+            'disable_pfwds': self._ctrl.srv_port.disable_port_forwardings,
+            'disable_all_pfwds': self._ctrl.srv_port.disable_all_port_forwardings,
+            'enable_pfwds': self._ctrl.srv_port.enable_port_forwardings,
+            'enable_all_pfwds': self._ctrl.srv_port.enable_all_port_forwardings,
 
             'clist': self._ctrl.srv_call.get_all_calls_list,
             'contacts': self._ctrl.srv_contact.get_contacts,
