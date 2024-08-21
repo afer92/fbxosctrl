@@ -24,6 +24,8 @@ from fbxostools.fbxosobj import FbxDhcpDynamicLease, FbxDhcpStaticLease
 from fbxostools.fbxosobj import FbxDhcpDynamicLeases, FbxDhcpStaticLeases
 from fbxostools.fbxosdb import FbxDbTable
 
+import yaml
+
 FBXOSCTRL_VERSION = "2.4.6.afer92.mjbright"
 
 __author__ = "Christophe Lherieau (aka skimpax)"
@@ -37,7 +39,7 @@ __status__ = "Production"
 
 
 def die(msg):
-    sys.stderr.write(f'{msg}\n')
+    sys.stderr.write(f'die: {msg}\n')
     exit(1)
 
 # Return code definitions
@@ -735,19 +737,129 @@ class FbxServicePortForwarding(FbxService):
         pass
 
     def load_from_archive(svc):
+        print("START FbxServicePortForwarding::load_from_archive(svc)")
+        print("load_from_archive: get forwardings")
         pfwds = FbxPortForwardings(svc._ctrl, empty=True)
+        print(f"load_from_archive: Freebox num_forwardings={ len(pfwds) }")
+        print("load_from_archive: get DbTable forwardings")
         t_pfwds = FbxDbTable(u'fw_redir', u'id', table_defs[u'fw_redir'][u'cols_def'])
+        print(f"load_from_archive: DbTable methods={ dir(t_pfwds) }")
+        print(f"load_from_archive: DbTable primary_keys={ t_pfwds.primary_keys() }")
+        print(f"load_from_archive: DbTable table_name={ t_pfwds.table_name }")
+        print(f"load_from_archive: DbTable num_forwardings={ t_pfwds }")
+        print("load_from_archive: get load_from_db(...)")
         pfwds.load_from_db(svc._ctrl, FbxPortForwarding, t_pfwds)
+        print("DONE load_from_archive(...)")
         return pfwds
+
+    def load_yaml(self):
+        self.delete_all_port_forwardings()
+        print(f"TODO: load_yaml()")
+        #return
+        yaml_path = self._ctrl.conf.yaml_path
+        print(f"TODO: load_yaml( {yaml_path} )")
+        with open( yaml_path, 'r') as file:
+            conf = yaml.safe_load(file)
+        print(f'conf: { conf }')
+        if not 'ports' in conf:
+            die("What no ports?")
+
+        for entry in conf['ports']:
+            print(f'entry: { entry }')
+            if not 'wan_port_end' in entry:
+                entry['wan_port_end'] = entry['wan_port_start']
+            defaults = {
+                'enabled': True,
+                'lan_port': 22,
+                'ip_proto': 'tcp',
+                'src_ip': '0.0.0.0',
+            }
+            for key in defaults:
+                if not key in entry: entry[key] = defaults[key]
+            print(f'MODIFIED entry: { entry }')
+
+            data = {u"enabled": entry['enabled'],
+                u"comment": entry['comment'],
+                u"lan_port": entry['lan_port'],
+                u"wan_port_end": entry['wan_port_end'],
+                u"wan_port_start": entry['wan_port_start'],
+                u"lan_ip": entry['lan_ip'],
+                u"ip_proto": entry['ip_proto'],
+                u"src_ip": entry['src_ip'],
+            }
+            print(u'Create', data)
+            url = u'/fw/redir/'
+            resp = self._http.post(url, data=data)
+            if not resp.success:
+                raise FbxException('Request failure: {}'.format(resp))
+
+        return 0
 
     def delete_all_port_forwardings(self):
         """ TODO: Delete *all* port forwarding """
         print("TODO: Delete *all* port forwarding")
-        return
-        self._pfwds = self.load_from_archive()
-        if len(self._pfwds) == 0:
-            print('No port forwardings')
-            return 0
+        #return
+        if self._conf.resp_archive:     # If requested form archive file:
+            self._pfwds = self.load_from_archive()
+        else:                           # else from freebox:
+            self._pfwds = FbxPortForwardings(self._ctrl)
+
+        num_pfwds=len(self._pfwds)
+        # if len(self._pfwds) == 0:
+            # print('No port forwardings')
+            # return 0
+
+        print(f'Deleting ALL {num_pfwds} port forwardings')
+        count = 0
+        for pfwd in self._pfwds:
+            #if pfwd.enabled: continue
+            count += 1
+            # tcount += 1
+            # pfwd to be displayed
+            #print(u'DELETE {}# {}'.format(count, pfwd))
+            print(u'DELETE {}# {}'.format(pfwd.id, pfwd))
+            # TODO: add a setter - with api call
+            #       (compare with wifi: _set_wifi_radio_state(self, set_on): )
+            #       see lines ~ 861 also ... for /fw/redir
+            #pfwd.enabled = True
+            #self.delete_port(pfwd, count)
+            #try:
+                #self.delete_port(pfwd, count)
+            #except Exception as exc:
+                #pass
+            try:
+                self.delete_port(pfwd, pfwd.id)
+            except Exception as exc:
+                pass
+            #delete(pfwd)
+
+        #self._pfwds = self.load_from_archive()
+        if self._conf.resp_save:
+            print("SAVING TO DB")
+            #pfwds = FbxPortForwardings(self._ctrl, empty=True)
+            #pfwds.save_to_db()
+            #pfwds = FbxPortForwardings(self._ctrl, empty=True)
+            #self._pfwds = pfwds
+            #for pfwd in self._pfwds: print(".")
+            #print("====")
+            #self._pfwds.__list=[]
+            #for pfwd in self._pfwds: print(".")
+            #self._pfwds.__init__(ctrl=self._ctrl)
+            ##self._pfwds = self._pfwds.__init__(ctrl=self._ctrl)
+            #print("----")
+            #for pfwd in self._pfwds: print(".")
+            #self._pfwds.__init()
+            #self._pfwds.init_list()
+            num_pfwds=len(self._pfwds)
+            print(f'Deleting ALL {num_pfwds} port forwardings')
+            self._pfwds = FbxPortForwardings(self._ctrl)
+            num_pfwds=len(self._pfwds)
+            print(f'Deleting ALL {num_pfwds} port forwardings')
+            for pfwd in self._pfwds: print(".")
+            self._pfwds.save_to_db()
+        #print(type( self._pfwds ))
+        #print(dir( self._pfwds ))
+
         pass
 
     def disable_all_port_forwardings(self):
@@ -757,6 +869,24 @@ class FbxServicePortForwarding(FbxService):
         if len(self._pfwds) == 0:
             print('No port forwardings')
             return 0
+
+        print(u'Disabling port forwardings')
+        count = 0
+        for pfwd in self._pfwds:
+            if pfwd.enabled:
+                continue
+            count += 1
+            # tcount += 1
+            # pfwd to be displayed
+            print(u'DISABLE {}# {}'.format(count, pfwd))
+            # TODO: add a setter - with api call
+            #       (compare with wifi: _set_wifi_radio_state(self, set_on): )
+            #       see lines ~ 861 also ... for /fw/redir
+            #pfwd.enabled = True
+            self.enable_port(pfwd, count)
+
+        if self._conf.resp_save:
+            self._pfwds.save_to_db()
         pass
 
     def enable_all_port_forwardings(self):
@@ -766,11 +896,85 @@ class FbxServicePortForwarding(FbxService):
         if len(self._pfwds) == 0:
             print('No port forwardings')
             return 0
+
+        #HERE:
+        print(u'Enabling port forwardings')
+        count = 0
+        for pfwd in self._pfwds:
+            if pfwd.enabled:
+                continue
+            count += 1
+            # tcount += 1
+            # pfwd to be displayed
+            print(u'ENABLE {}# {}'.format(count, pfwd))
+            # TODO: add a setter - with api call
+            #       (compare with wifi: _set_wifi_radio_state(self, set_on): )
+            #       see lines ~ 861 also ... for /fw/redir
+            #pfwd.enabled = True
+            self.enable_port(pfwd, count)
+
+        if self._conf.resp_save:
+            self._pfwds.save_to_db()
         pass
+
+    #HERE:
+    def delete_port(self, pwd, count):
+        #data = {u"enabled": False}
+        #print(f'DELETE { url }: { data }')
+        url = f'/fw/redir/{count}'
+        print(f'DELETE { url }')
+        #resp = self._http.delete(url, data=data)
+        resp = self._http.delete(url)
+        ## print(f'POST { url }: { data }')
+        ## resp = self._http.postt(url, data=data)
+        #resp = self._http.put(uri, data=data, timeout=timeout)
+        if not resp.success:
+            raise FbxException('Request failure: {}'.format(resp))
+        return 0
+
+    def disable_port(self, pwd, count):
+        data = {u"enabled": False}
+        url = f'/fw/redir/{count}'
+        print(f'PUT { url }: { data }')
+        resp = self._http.put(url, data=data)
+        ## print(f'POST { url }: { data }')
+        ## resp = self._http.postt(url, data=data)
+        #resp = self._http.put(uri, data=data, timeout=timeout)
+        if not resp.success:
+            raise FbxException('Request failure: {}'.format(resp))
+        return 0
+
+    def enable_port(self, pwd, count):
+        #data = {u"enabled": u"True"}
+        # INTERNAL ERROR: data = {u"enabled": u"true"}
+        # INTERNAL ERROR: data = {u"enabled": u"True"}
+        # INTERNAL ERROR: data = {u"enabled": "True"}
+        # INTERNAL ERROR: data = {u"enabled": "true"}
+        # RULE-EXISTS ERROR: data = {u"enabled": True}
+        # SUCCESS On False !!  data = {u"enabled": False} - also renumbers rule !!
+        #data = {u"enabled": False}
+        data = {u"enabled": True}
+        #url = uf'/fw/redir/{count}'
+        url = f'/fw/redir/{count}'
+        #url = u'/fw/redir/1'
+        print(f'PUT { url }: { data }')
+        resp = self._http.put(url, data=data)
+        ## print(f'POST { url }: { data }')
+        ## resp = self._http.postt(url, data=data)
+        #resp = self._http.put(uri, data=data, timeout=timeout)
+        if not resp.success:
+            raise FbxException('Request failure: {}'.format(resp))
+        return 0
 
     def add_port_forwardings(self):
         """ TODO: Add specific port forwarding """
         print("TODO: Add specific port forwarding")
+        self._pfwds = self.load_from_archive()
+        if len(self._pfwds) == 0:
+            print('No port forwardings')
+            return 0
+        if self._conf.resp_save:
+            self._pfwds.save_to_db()
         pass
 
     def delete_port_forwardings(self):
@@ -779,6 +983,8 @@ class FbxServicePortForwarding(FbxService):
         if len(self._pfwds) == 0:
             print('No port forwardings')
             return 0
+        if self._conf.resp_save:
+            self._pfwds.save_to_db()
         pass
 
     def disable_port_forwardings(self):
@@ -787,6 +993,8 @@ class FbxServicePortForwarding(FbxService):
         if len(self._pfwds) == 0:
             print('No port forwardings')
             return 0
+        if self._conf.resp_save:
+            self._pfwds.save_to_db()
         pass
 
     def enable_port_forwardings(self):
@@ -795,31 +1003,44 @@ class FbxServicePortForwarding(FbxService):
         if len(self._pfwds) == 0:
             print('No port forwardings')
             return 0
+        if self._conf.resp_save:
+            self._pfwds.save_to_db()
         pass
 
     def get_port_forwardings(self):
         """ List the port forwarding on going"""
 
-        self._pfwds = self.load_from_archive()
-        '''
-        if self._conf.resp_archive:
-            self._pfwds = load_from_archive(self)
-        else:
+        print("START get_port_forwardings(self)")
+        #self._pfwds = self.load_from_archive()
+        #sys.exit(1)
+        if self._conf.resp_archive:     # If requested form archive file:
+            # Will merge loaded values with freebox values (from where?)
+            #print(f'num_pfwds={num_pfwds}')
+            print("get_port_forwardings(self): self._conf.resp_archive")
+            self._pfwds = self.load_from_archive()
+            num_pfwds=len(self._pfwds)
+            print(f'FROM archive: num_pfwds={num_pfwds}')
+        else:                           # else from freebox:
+            #print(f'XX num_pfwds={num_pfwds}')
             self._pfwds = FbxPortForwardings(self._ctrl)
-        '''
+            num_pfwds=len(self._pfwds)
+            print(f'FROM Freebox: num_pfwds={num_pfwds}')
 
-        if len(self._pfwds) == 0:
+        num_pfwds=len(self._pfwds)
+        if num_pfwds == 0:
             print('No port forwardings')
             return 0
 
-        print(f'{ len(self._pfwds) } port forwardings')
+        if self._conf.resp_as_json is False:
+            print(f'{ len(self._pfwds) } port forwardings')
         if self._conf.resp_restore:
+            print("get_port_forwardings(self): self._conf.resp_restore")
             #die(u'\nMissing port forwardings')
             print("get_port_fwd/restore: calling load_from_archive(self)")
             self._pfwds_arc = load_from_archive(self)
             # look for missing port forwardings
             print(u'\nMissing port forwardings')
-            print(f'{ len(self._pfwds) } port forwardings')
+            #print(f'{ len(self._pfwds) } port forwardings')
             for pwd_arc in self._pfwds_arc:
                 print(f'pwd_arc:{pwd_arc}\n')
                 pwd_fbx = self._pfwds.get_by_id(pwd_arc.id)
@@ -846,10 +1067,11 @@ class FbxServicePortForwarding(FbxService):
 
             return 0
 
-        if self._conf.resp_as_json is False:
-            print('{} port forwardings'.format(len(self._pfwds)))
+        #if self._conf.resp_as_json is False:
+            #print('{} port forwardings'.format(len(self._pfwds)))
 
         if self._conf.resp_save:
+            print("get_port_forwardings(self): self._conf.resp_save")
             # todo : save to archive
             self._pfwds.save_to_db()
 
@@ -859,7 +1081,9 @@ class FbxServicePortForwarding(FbxService):
         tcount = 0
 
         log(">>> get_enabled_port_forwarding")
-        print(u'Enabled port forwardings')
+        #num_enable_pfwds = len( self._pfwds )
+        #print(f'Enabled { num_enable_pfwds } port forwardings')
+        print(f'Enabled port forwardings')
         count = 0
         for pfwd in self._pfwds:
             if pfwd.enabled is False:
@@ -867,10 +1091,12 @@ class FbxServicePortForwarding(FbxService):
             count += 1
             tcount += 1
             # pfwd to be displayed
-            print(u'{}# {}'.format(count, pfwd))
+            print(u'- {}# {}'.format(count, pfwd))
 
         log(">>> get_disabled_port_forwarding")
-        print(u'Disabled port forwardings')
+        #num_disable_pfwds = len( self._pfwds )
+        #print(f'Disabled { num_disable_pfwds } port forwardings')
+        print(f'Disabled port forwardings')
         count = 0
         for pfwd in self._pfwds:
             if pfwd.enabled is True:
@@ -878,7 +1104,7 @@ class FbxServicePortForwarding(FbxService):
             count += 1
             tcount += 1
             # pfwd to be displayed
-            print(u'{}# {}'.format(count, pfwd))
+            print(u'- {}# {}'.format(count, pfwd))
 
         return tcount > 0
 
@@ -1305,6 +1531,12 @@ class FreeboxOSCli:
             default=argparse.SUPPRESS,
             action='store_true',
             help='enable all port forwardings')
+        group.add_argument(
+            '--load-yaml',
+            default=None,
+            dest='load_yaml',
+            nargs=1,      # Comma-separated list of Port-forwards
+            help='Load config from yaml')
         """
         #### TODO:    START - Arguments to implement
         #self._parser.add_argument( '-c', nargs=1, dest='conf_path', default='.', help=...')
@@ -1415,6 +1647,8 @@ class FreeboxOSCli:
             'pfwd': self._ctrl.srv_port.get_port_forwardings,
             'add_pfwds': self._ctrl.srv_port.add_port_forwardings,
 
+            'load_yaml': self._ctrl.srv_port.load_yaml,
+
             'delete_pfwds': self._ctrl.srv_port.delete_port_forwardings,
             'delete_all_pfwds': self._ctrl.srv_port.delete_all_port_forwardings,
             'disable_pfwds': self._ctrl.srv_port.disable_port_forwardings,
@@ -1473,16 +1707,31 @@ class FreeboxOSCli:
         self._ctrl.conf.conf_path = conf_path
         del argsdict['conf_path']
 
+        yaml_path_list = argsdict.get('load_yaml')
+        #if len(yaml_path_list) != 0:
+        if yaml_path_list:
+            yaml_path = yaml_path_list[0]
+            if yaml_path != '':
+                if not os.path.isfile(yaml_path):
+                    print('yaml file does not exist: {}'.format(yaml_path))
+                    sys.exit(1)
+                #self._ctrl.conf.load_yaml = True
+                print(f'yaml_path={yaml_path}')
+                self._ctrl.conf.yaml_path = yaml_path
+
         return argsdict
 
     def dispatch(self, args):
         """ Call controller action """
+        print(f'dispatch(self, {args}')
         for cmd in args:
             # retrieve callback associated to cmd and execute it, if not found
             # display help
-            print(f"Calling handler for cmd='{cmd}'")
-            print(f"handler={ self._cmd_handlers.get(cmd) }")
-            return self._cmd_handlers.get(cmd, self._parser.print_help)()
+            # Only invoke handler if args[cmd] != None: (avoid load_yaml None):
+            if args[cmd]:
+                print(f"Calling handler for cmd='{cmd}'")
+                print(f"handler={ self._cmd_handlers.get(cmd) }")
+                return self._cmd_handlers.get(cmd, self._parser.print_help)()
 
 
 def main():

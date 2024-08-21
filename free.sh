@@ -13,7 +13,21 @@ while [ $# -ne 0 ]; do
             -reg*) $FBX -regapp; exit $?;;
        -lp|--pfwd) $FBX --pfwd; exit $?;;
         -h|--help) $FBX --help; exit $?;;
-        --ip*) $FBX --dhcpleases | grep -E "^([0-9]|List of)"; exit $?;;
+            --ip*) $FBX --dhcpleases | grep -E "^([0-9]|List of)"; exit $?;;
+
+               # HACK: manually delete WHOLE db
+               -P) rm fbxosctrl.db;
+                   YAML=ports.yaml
+                   [ ! -z "$2" ] && { shift; YAML=$1; }
+                   set -x
+                   $FBX --load-yaml $YAML --save
+                   set +x
+                   ls -altr *.db
+                   ;;
+               -D) rm fbxosctrl.db;
+                   $FBX --save --delete-all-pfwds;
+                   ls -altr *.db
+                   ;;
 
               --*) $FBX $*; exit $?;;
 

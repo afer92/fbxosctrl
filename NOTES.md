@@ -1,4 +1,10 @@
 
+# Status
+
+Partly working:
+- free.sh -P will load config from yaml file, to Freebox (not saving to db file though)
+- free.sh -D will delete db file, then delete all ports on Freebox
+
 # My Notes
 
 Using -j, --archive, --save, --restore arguments result in the following Booleans being set:

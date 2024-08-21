@@ -213,18 +213,31 @@ class FbxConfiguration:
         """ Indicate whether registration params look initialized """
         log('>>> has_registration_params')
         if (self._reg_params and
-                self._reg_params.get('track_id') is not None and
-                self._reg_params.get('app_token') is not ''):
+                (self._reg_params.get('track_id') is not None) and
+                (self._reg_params.get('app_token') != '')):
             return True
         else:
             return False
 
     def api_address(self, api_url=None):
         """Build the full API URL based on the mDNS info"""
+
+        api_version=self._addr_params['api_version']
+        # No use with API version 12 !!
+        #major_api_version=self._addr_params['api_version'][:1]
+        if "." in api_version:
+            major_api_version=api_version[:2]
+        else:
+            major_api_version=api_version[:1]
+            #major_api_version=self._addr_params['api_version'][:1]
+        # FIXED !!??
+        #major_api_version=4
+        #print(f'api_version={ api_version } major_api_version={ major_api_version }')
+
         url = '{freebox_addr}{api_base_url}v{major_api_version}'.format(
             freebox_addr=self.freebox_address,
             api_base_url=self._addr_params['api_base_url'],
-            major_api_version=self._addr_params['api_version'][:1])
+            major_api_version=major_api_version)
         if api_url:
             if api_url[0] != '/':
                 url += '/'
@@ -265,6 +278,9 @@ class FbxConfiguration:
         if os.path.exists(self._addr_file):
             with open(self._addr_file) as infile:
                 self._addr_params = json.load(infile)
+                print(f"[file] api_version={ self._addr_params['api_version'] } ")
+                #print(self._addr_params)
+                # sys.exit(1)
 
         elif self._addr_params is None:
             mdns_info = self._fetch_fbx_mdns_info_via_mdns()
@@ -275,6 +291,7 @@ class FbxConfiguration:
             self._addr_params['port'] = mdns_info['https_port']
             self._addr_params['api_base_url'] = mdns_info['api_base_url']
             self._addr_params['api_version'] = mdns_info['api_version']
+            print(f"[mdns] api_version={ self._addr_params['api_version'] } ")
             with open(self._addr_file, 'w') as of:
                 json.dump(self._addr_params, of, indent=True, sort_keys=True)
 
@@ -433,19 +450,23 @@ class FbxHttp():
         """PUT request"""
         log(">>> put")
         if not no_login:
+            print('LOGGING IN')
             self._login()
 
+        print('LOGGED IN')
         url = self._conf.api_address(uri)
         jdata = json.dumps(data)
         log('PUT url: {} data: {}'.format(url, jdata))
 
+        print('PUT call ...')
         r = requests.put(
             url,
             verify=self._certificates_file,
             data=jdata,
             headers=self.headers,
             timeout=timeout if timeout is not None else self._http_timeout)
-        log('PUT response: {}'.format(r.text))
+        log('PUT response[{}]: {}'.format(r.status_code,r.text))
+        print('PUT response[{}]: {}'.format(r.status_code,r.text))
 
         # ensure status_code is 200, else raise exception
         if requests.codes.ok != r.status_code:
@@ -460,6 +481,7 @@ class FbxHttp():
         url = self._conf.api_address(uri)
         jdata = json.dumps(data)
         log('POST url: {} data: {}'.format(url, jdata))
+        print('xxPOST url: {} data: {}'.format(url, jdata))
 
         r = requests.post(
             url,
@@ -478,7 +500,8 @@ class FbxHttp():
         while try_cpt < 5:
             try_cpt += 1
             r = self.post_do(uri, data=data, timeout=timeout, no_login=no_login)
-            log('POST response: {}'.format(r.text))
+            log('POST response[{}]: {}'.format(r.status_code,r.text))
+            print('POST response[{}]: {}'.format(r.status_code,r.text))
 
             if requests.codes.ok != r.status_code:
                 if r.status_code == 403:
@@ -556,7 +579,7 @@ class FbxHttp():
                 log('Permissions: {}'.format(permissions))
                 if not permissions.get('settings'):
                     print(
-                        "Warning: permission 'settings' has not been allowed yet" +
+                            "_login: Warning: permission 'settings' has not been allowed yet" +
                         ' in FreeboxOS server. This script may fail!')
             else:
                 raise FbxException('Session failure: {}'.format(resp))
