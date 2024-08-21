@@ -734,6 +734,41 @@ class FbxServicePortForwarding(FbxService):
     def init(self):
         pass
 
+    def add_port_forwardings(self):
+        """ TODO: Add specific port forwarding """
+        print("TODO: Add specific port forwarding")
+        pass
+
+    def delete_port_forwardings(self):
+        """ TODO: Delete specific port forwarding """
+        print("TODO: Delete specific port forwarding")
+        pass
+
+    def delete_all_port_forwardings(self):
+        """ TODO: Delete *all* port forwarding """
+        print("TODO: Delete *all* port forwarding")
+        pass
+
+    def disable_port_forwardings(self):
+        """ TODO: Disable specific port forwarding """
+        print("TODO: Disable specific port forwarding")
+        pass
+
+    def disable_all_port_forwardings(self):
+        """ TODO: Disable *all* port forwarding """
+        print("TODO: Disable *all* port forwarding")
+        pass
+
+    def enable_port_forwardings(self):
+        """ TODO: Enable specific port forwarding """
+        print("TODO: Enable specific port forwarding")
+        pass
+
+    def enable_all_port_forwardings(self):
+        """ TODO: Enable *all* port forwarding """
+        print("TODO: Enable *all* port forwarding")
+        pass
+
     def get_port_forwardings(self):
         """ List the port forwarding on going"""
 
@@ -1229,6 +1264,64 @@ class FreeboxOSCli:
             default=argparse.SUPPRESS,
             action='store_true',
             help='display the list of port forwardings info')
+
+        """
+        #### TODO:    START - Arguments to implement
+        group.add_argument(   # TODO: implement ...
+            '--delete-all-pfwds',
+            default=argparse.SUPPRESS,
+            #dest='ports_list',
+            action='store_true',
+            help='delete all port forwardings')
+        #self._parser.add_argument( '-c', nargs=1, dest='conf_path', default='.', help=...')
+        group.add_argument(   # TODO: implement ...
+            #'--delete-pfwds',
+            '-D',
+            # default=argparse.SUPPRESS,
+            default='',   # Empty list as default
+            #nargs=1,      # Comma-separated list of Port-forwards
+            #dest='ports_list',
+            action='store_true',
+            help='delete specified port forwardings')
+        group.add_argument(   # TODO: implement ...
+            '--disable-all-pfwds',
+            default=argparse.SUPPRESS,
+            #dest='ports_list',
+            action='store_true',
+            help='disable all port forwardings')
+        group.add_argument(   # TODO: implement ...
+            '--disable-pfwds',
+            # default=argparse.SUPPRESS,
+            default='',   # Empty list as default
+            #nargs=1,      # Comma-separated list of Port-forwards
+            #dest='ports_list',
+            action='store_true',
+            help='disable specified port forwardings')
+        group.add_argument(   # TODO: implement ...
+            '--enable-all-pfwds',
+            default=argparse.SUPPRESS,
+            #dest='ports_list',
+            action='store_true',
+            help='enable all port forwardings')
+        group.add_argument(   # TODO: implement ...
+            '--enable-pfwds',
+            # default=argparse.SUPPRESS,
+            default='',   # Empty list as default
+            #nargs=1,      # Comma-separated list of Port-forwards
+            #dest='ports_list',
+            action='store_true',
+            help='enable specified port forwardings')
+        group.add_argument(   # TODO: implement ...
+            '--add-pfwds',
+            # default=argparse.SUPPRESS,
+            default='',   # Empty list as default
+            #nargs=1,      # Comma-separated list of Port-forwards
+            #dest='ports_list',
+            action='store_true',
+            help='add specific port forwardings')
+        #### TODO:    END   - Arguments to implement
+        """
+
         group.add_argument(
             '--clist',
             default=argparse.SUPPRESS,
@@ -1296,7 +1389,17 @@ class FreeboxOSCli:
             'wpoff': self._ctrl.srv_wifi.set_wifi_planning_off,
             'dhcpleases': self._ctrl.srv_dhcp.get_dhcp_leases,
             'dhcpstleases': self._ctrl.srv_dhcp.get_static_leases,
+
             'pfwd': self._ctrl.srv_port.get_port_forwardings,
+            'add-pfwds': self._ctrl.srv_port.add_port_forwardings,
+
+            'delete-pfwds': self._ctrl.srv_port.delete_port_forwardings,
+            'delete-all-pfwds': self._ctrl.srv_port.delete_all_port_forwardings,
+            'disable-pfwds': self._ctrl.srv_port.disable_port_forwardings,
+            'disable-all-pfwds': self._ctrl.srv_port.disable_all_port_forwardings,
+            'enable-pfwds': self._ctrl.srv_port.enable_port_forwardings,
+            'enable-all-pfwds': self._ctrl.srv_port.enable_all_port_forwardings,
+
             'clist': self._ctrl.srv_call.get_all_calls_list,
             'contacts': self._ctrl.srv_contact.get_contacts,
             'cnew': self._ctrl.srv_call.get_new_calls_list,
@@ -1355,6 +1458,8 @@ class FreeboxOSCli:
         for cmd in args:
             # retrieve callback associated to cmd and execute it, if not found
             # display help
+            print(f"Calling handler for cmd='{cmd}'")
+            print(f"handler={ self._cmd_handlers.get(cmd) }")
             return self._cmd_handlers.get(cmd, self._parser.print_help)()
 
 
