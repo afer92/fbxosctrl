@@ -46,7 +46,7 @@ def fbx_question_yn(question):
     result = False
     answer = None
     while answer not in ("y", "n", "Y", "N", "o", "O"):
-        answer = input(u"{} Y/N): ".format(question))
+        answer = input(u"{} (Y/N): ".format(question))
         if answer in ("y", "Y", "o", "O"):
             result = True
         elif answer in ("n", "N"):
