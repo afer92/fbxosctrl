@@ -13,7 +13,7 @@ while [ $# -ne 0 ]; do
             -reg*) $FBX -regapp; exit $?;;
        -lp|--pfwd) $FBX --pfwd; exit $?;;
         -h|--help) $FBX --help; exit $?;;
-            --ip*) $FBX --dhcpleases | grep ^[0-9]; exit $?;;
+        --ip*) $FBX --dhcpleases | grep -E "^([0-9]|List of)"; exit $?;;
 
               --*) $FBX $*; exit $?;;
 
