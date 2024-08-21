@@ -734,6 +734,40 @@ class FbxServicePortForwarding(FbxService):
     def init(self):
         pass
 
+    def load_from_archive(svc):
+        pfwds = FbxPortForwardings(svc._ctrl, empty=True)
+        t_pfwds = FbxDbTable(u'fw_redir', u'id', table_defs[u'fw_redir'][u'cols_def'])
+        pfwds.load_from_db(svc._ctrl, FbxPortForwarding, t_pfwds)
+        return pfwds
+
+    def delete_all_port_forwardings(self):
+        """ TODO: Delete *all* port forwarding """
+        print("TODO: Delete *all* port forwarding")
+        return
+        self._pfwds = self.load_from_archive()
+        if len(self._pfwds) == 0:
+            print('No port forwardings')
+            return 0
+        pass
+
+    def disable_all_port_forwardings(self):
+        """ TODO: Disable *all* port forwarding """
+        print("TODO: Disable *all* port forwarding")
+        self._pfwds = self.load_from_archive()
+        if len(self._pfwds) == 0:
+            print('No port forwardings')
+            return 0
+        pass
+
+    def enable_all_port_forwardings(self):
+        """ TODO: Enable *all* port forwarding """
+        print("TODO: Enable *all* port forwarding")
+        self._pfwds = self.load_from_archive()
+        if len(self._pfwds) == 0:
+            print('No port forwardings')
+            return 0
+        pass
+
     def add_port_forwardings(self):
         """ TODO: Add specific port forwarding """
         print("TODO: Add specific port forwarding")
@@ -742,46 +776,37 @@ class FbxServicePortForwarding(FbxService):
     def delete_port_forwardings(self):
         """ TODO: Delete specific port forwarding """
         print("TODO: Delete specific port forwarding")
-        pass
-
-    def delete_all_port_forwardings(self):
-        """ TODO: Delete *all* port forwarding """
-        print("TODO: Delete *all* port forwarding")
+        if len(self._pfwds) == 0:
+            print('No port forwardings')
+            return 0
         pass
 
     def disable_port_forwardings(self):
         """ TODO: Disable specific port forwarding """
         print("TODO: Disable specific port forwarding")
-        pass
-
-    def disable_all_port_forwardings(self):
-        """ TODO: Disable *all* port forwarding """
-        print("TODO: Disable *all* port forwarding")
+        if len(self._pfwds) == 0:
+            print('No port forwardings')
+            return 0
         pass
 
     def enable_port_forwardings(self):
         """ TODO: Enable specific port forwarding """
         print("TODO: Enable specific port forwarding")
-        pass
-
-    def enable_all_port_forwardings(self):
-        """ TODO: Enable *all* port forwarding """
-        print("TODO: Enable *all* port forwarding")
+        if len(self._pfwds) == 0:
+            print('No port forwardings')
+            return 0
         pass
 
     def get_port_forwardings(self):
         """ List the port forwarding on going"""
 
-        def load_from_archive(svc):
-            pfwds = FbxPortForwardings(svc._ctrl, empty=True)
-            t_pfwds = FbxDbTable(u'fw_redir', u'id', table_defs[u'fw_redir'][u'cols_def'])
-            pfwds.load_from_db(svc._ctrl, FbxPortForwarding, t_pfwds)
-            return pfwds
-
+        self._pfwds = self.load_from_archive()
+        '''
         if self._conf.resp_archive:
             self._pfwds = load_from_archive(self)
         else:
             self._pfwds = FbxPortForwardings(self._ctrl)
+        '''
 
         if len(self._pfwds) == 0:
             print('No port forwardings')
