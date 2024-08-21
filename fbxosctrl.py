@@ -24,7 +24,7 @@ from fbxostools.fbxosobj import FbxDhcpDynamicLease, FbxDhcpStaticLease
 from fbxostools.fbxosobj import FbxDhcpDynamicLeases, FbxDhcpStaticLeases
 from fbxostools.fbxosdb import FbxDbTable
 
-FBXOSCTRL_VERSION = "2.4.6"
+FBXOSCTRL_VERSION = "2.4.6.afer92.mjbright"
 
 __author__ = "Christophe Lherieau (aka skimpax)"
 __copyright__ = "Copyright 2019, Christophe Lherieau"
@@ -35,6 +35,10 @@ __maintainer__ = "skimpax"
 __email__ = "skimpax@gmail.com"
 __status__ = "Production"
 
+
+def die(msg):
+    sys.stderr.write(f'{msg}\n')
+    exit(1)
 
 # Return code definitions
 RC_OK = 0
@@ -294,6 +298,16 @@ class FbxServiceConnection(FbxService):
                 print('   - Tx:  {} dB'.format(resp.result['sfp_pwr_tx']/100))
                 print('   - Rx:  {} dB'.format(resp.result['sfp_pwr_rx']/100))
 
+/* TODO: TEST if needed
+        print('Server info:')
+        print(' - Model:     {}'.format(resp.result['model_info']['pretty_name']))
+        print(' - MAC:       {}'.format(resp.result['mac']))
+        print(' - Firmware:  {}'.format(resp.result['firmware_version']))
+        print(' - Uptime:    {}'.format(resp.result['uptime']))
+        print(' - Sensors:')
+        for k, v in resp.result.items():
+            print(' - {:25} {}'.format(k, v))
+*/
         return True
 
 
@@ -472,17 +486,22 @@ class FbxServiceDhcp(FbxService):
         self._dyn_leases = FbxDhcpDynamicLeases(self._ctrl)
 
         def load_from_archive(svc):
+            print(f"pfwd: load_from_archive({svc})")
             st_leases = FbxDhcpStaticLeases(svc._ctrl, empty=True)
             t_st_leases = FbxDbTable(u'static_lease', u'id', table_defs[u'static_lease'][u'cols_def'])
             st_leases.load_from_db(svc._ctrl, FbxDhcpStaticLease, t_st_leases)
             return st_leases
 
         if self._conf.resp_archive:
+            print("archive: calling load_from_archive(self)")
             self._st_leases = load_from_archive(self)
         else:
+            print("pfwd: calling FbxDhcpStaticLeasesX(..)")
             self._st_leases = FbxDhcpStaticLeasesX(self._ctrl, self._dyn_leases)
 
         if self._conf.resp_restore:
+            print("restore: calling load_from_archive(self)")
+            # TODO: die(u'\nMissing static leases')
             self._st_leases_arc = load_from_archive(self)
             # look for missing static leases
             print(u'\nMissing leases')
@@ -598,6 +617,7 @@ class FbxServiceDhcp(FbxService):
         return
 
         if self._conf.resp_restore:
+            die(u'\nNEVER GET HERE - Create static leases')
             for k, v in self._arc_o_dict.items():
                 """ Create static lease"""
                 if (k not in self._fbx_o_dict.keys()) and v.is_static:
@@ -606,7 +626,7 @@ class FbxServiceDhcp(FbxService):
                     to_restore = False
                     answer = None
                     while answer not in ("y", "n", "Y", "N", "o", "O"):
-                        answer = input(u"Restore Y/N): ")
+                        answer = input(u"Restore (Y/N): ")
                         if answer in ("y", "Y", "o", "O"):
                             to_restore = True
                         elif answer in ("n", "N"):
@@ -638,7 +658,7 @@ class FbxServiceDhcp(FbxService):
                         to_restore = False
                         answer = None
                         while answer not in ("y", "n", "Y", "N", "o", "O"):
-                            answer = input(u"Update Y/N): ")
+                            answer = input(u"Update (Y/N): ")
                             if answer in ("y", "Y", "o", "O"):
                                 to_restore = True
                             elif answer in ("n", "N"):
@@ -732,15 +752,23 @@ class FbxServicePortForwarding(FbxService):
             print('No port forwardings')
             return 0
 
+        print(f'{ len(self._pfwds) } port forwardings')
         if self._conf.resp_restore:
+            #die(u'\nMissing port forwardings')
+            print("get_port_fwd/restore: calling load_from_archive(self)")
             self._pfwds_arc = load_from_archive(self)
             # look for missing port forwardings
             print(u'\nMissing port forwardings')
+            print(f'{ len(self._pfwds) } port forwardings')
             for pwd_arc in self._pfwds_arc:
+                print(f'pwd_arc:{pwd_arc}\n')
                 pwd_fbx = self._pfwds.get_by_id(pwd_arc.id)
+                print(f'pwd_fbx:{pwd_fbx}\n')
                 if pwd_fbx is None:
                     print(pwd_arc)
-                    if fbx_question_yn(u'Restore'):
+                    #if fbx_question_yn(u'Restore'):
+                    #if True:
+                    if pwd_arc.wan_port_start > 32000:
                         data = {u"enabled": pwd_arc.enabled,
                                 u"comment": pwd_arc.comment,
                                 u"lan_port": pwd_arc.lan_port,
@@ -1359,3 +1387,7 @@ if __name__ == '__main__':
 
     sys.exit(rc)
     """
+
+
+
+
