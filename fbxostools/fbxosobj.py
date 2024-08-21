@@ -971,6 +971,20 @@ class FbxPortForwardings(FbxObjList):
         # init object list
         FbxObjList.init_list(self)
 
+        return
+        print("DELETING ALL Portforwards ...")
+        for pfwd in self._list:
+            print(f"PFWD={pfwd}")
+            print("-----")
+            #print(dir(pfwd))
+            #print("-----")
+
+            # Delete a port forwarding: # DELETE /api/v4/fw/redir/{redir_id}
+            uri = (self._uri+u'{}').format(pfwd.id)
+            print(f"uri=<{uri}>")
+            print(f"DELETE[{pfwd.id}, {pfwd.id_name}]")
+            #resp = self._http.delete(uri, data=payload)
+            resp = self._http.delete(uri)
 
 class FbxDhcpDynamicLease(FbxObj):
     """Call object"""
@@ -1946,3 +1960,5 @@ def main():
 if __name__ == '__main__':
 
     sys.exit(main())
+
+
