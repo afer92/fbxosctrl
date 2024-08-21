@@ -1265,12 +1265,21 @@ class FreeboxOSCli:
             action='store_true',
             help='display the list of port forwardings info')
 
-        group.add_argument(   # TODO: implement ...
+        group.add_argument(
             '--delete-all-pfwds',
             default=argparse.SUPPRESS,
-            #dest='ports_list',
             action='store_true',
             help='delete all port forwardings')
+        group.add_argument(
+            '--disable-all-pfwds',
+            default=argparse.SUPPRESS,
+            action='store_true',
+            help='disable all port forwardings')
+        group.add_argument(
+            '--enable-all-pfwds',
+            default=argparse.SUPPRESS,
+            action='store_true',
+            help='enable all port forwardings')
         """
         #### TODO:    START - Arguments to implement
         #self._parser.add_argument( '-c', nargs=1, dest='conf_path', default='.', help=...')
@@ -1284,12 +1293,6 @@ class FreeboxOSCli:
             action='store_true',
             help='delete specified port forwardings')
         group.add_argument(   # TODO: implement ...
-            '--disable-all-pfwds',
-            default=argparse.SUPPRESS,
-            #dest='ports_list',
-            action='store_true',
-            help='disable all port forwardings')
-        group.add_argument(   # TODO: implement ...
             '--disable-pfwds',
             # default=argparse.SUPPRESS,
             default='',   # Empty list as default
@@ -1297,12 +1300,6 @@ class FreeboxOSCli:
             #dest='ports_list',
             action='store_true',
             help='disable specified port forwardings')
-        group.add_argument(   # TODO: implement ...
-            '--enable-all-pfwds',
-            default=argparse.SUPPRESS,
-            #dest='ports_list',
-            action='store_true',
-            help='enable all port forwardings')
         group.add_argument(   # TODO: implement ...
             '--enable-pfwds',
             # default=argparse.SUPPRESS,
