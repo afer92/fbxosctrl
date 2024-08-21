@@ -1,0 +1,17 @@
+ports:
+
+- {'comment': 'my-nuc', 'wan_port_start': 11000, 'lan_ip': '192.168.0.250' }
+
+- {'comment': 't-ans0', 'wan_port_start': 12000, 'lan_ip': '192.168.0.200' }
+
+- {'comment': 'ans0',   'wan_port_start': 23000, 'lan_ip': '192.168.0.201' }
+- {'comment': 'ans1',   'wan_port_start': 23001, 'lan_ip': '192.168.0.202' }
+- {'comment': 'ans2',   'wan_port_start': 23002, 'lan_ip': '192.168.0.203' }
+- {'comment': 'ans3',   'wan_port_start': 23003, 'lan_ip': '192.168.0.204' }
+- {'comment': 'ans4',   'wan_port_start': 23004, 'lan_ip': '192.168.0.205' }
+- {'comment': 'ans5',   'wan_port_start': 23005, 'lan_ip': '192.168.0.206' }
+- {'comment': 'ans6',   'wan_port_start': 23006, 'lan_ip': '192.168.0.207' }
+- {'comment': 'ans7',   'wan_port_start': 23007, 'lan_ip': '192.168.0.208' }
+- {'comment': 'ans8',   'wan_port_start': 23008, 'lan_ip': '192.168.0.209' }
+- {'comment': 'ans9',   'wan_port_start': 23009, 'lan_ip': '192.168.0.210' }
+
