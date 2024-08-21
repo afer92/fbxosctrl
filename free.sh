@@ -6,11 +6,16 @@ FBX=$( dirname $0 )/fbxosctrl.py
 
 die() { echo "$0: die - $*" >&2; exit 1; }
 
+[ $# -eq 0 ] && set -- --help
+
 while [ $# -ne 0 ]; do
     case $1 in
-            -reg*) $FBX -regapp;;
-       -lp|--pfwd) $FBX --pfwd;;
-        -h|--help) $FBX --help;;
+            -reg*) $FBX -regapp; exit $?;;
+       -lp|--pfwd) $FBX --pfwd; exit $?;;
+        -h|--help) $FBX --help; exit $?;;
+            --ip*) $FBX --dhcpleases | grep ^[0-9]; exit $?;;
+
+              --*) $FBX $*; exit $?;;
 
                 *) die "Unknown option '$1'";;
     esac
