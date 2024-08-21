@@ -298,7 +298,7 @@ class FbxServiceConnection(FbxService):
                 print('   - Tx:  {} dB'.format(resp.result['sfp_pwr_tx']/100))
                 print('   - Rx:  {} dB'.format(resp.result['sfp_pwr_rx']/100))
 
-/* TODO: TEST if needed
+        ''' /* TODO: TEST if needed
         print('Server info:')
         print(' - Model:     {}'.format(resp.result['model_info']['pretty_name']))
         print(' - MAC:       {}'.format(resp.result['mac']))
@@ -307,7 +307,7 @@ class FbxServiceConnection(FbxService):
         print(' - Sensors:')
         for k, v in resp.result.items():
             print(' - {:25} {}'.format(k, v))
-*/
+        */ '''
         return True
 
 

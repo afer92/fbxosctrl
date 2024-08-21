@@ -1,3 +1,6 @@
 fbxosctrl_addressing.txt
 fbxosctrl_certificates.txt
 fbxosctrl_registration.txt
+fbxosctrl.db
+fbxostools/__pycache__/*
+fbxostools/*.py.mine.2023
