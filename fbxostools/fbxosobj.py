@@ -251,6 +251,7 @@ class FbxObj:
         return sql_update
 
     def save_to_db(self):
+        print("1.FbxObj: save_to_db")
         (query, values) = self._table.sql_build_ph(self, replace=True)
         self.ctrl.conf._db.query_update_ph(self._table, query, values)
         return
@@ -360,12 +361,15 @@ class FbxObjList:
             from fbxostools.fbxosbase import FbxHttp
         log(self._log)
         log(u'>>>> load_from_db')
+        print(u'>>>> load_from_db')
         if ctrl is not None:
+            print("NOT NONE")
             self._ctrl = ctrl
             self._conf = ctrl._conf
             self._http = FbxHttp(self._conf)
             self._o_type = O_type
             self._ol_type = type(self)
+        print("sql_select")
         sql_select = table.sql_select
         table_name = u'`%s`' % (table.table_name)
         sql_select = sql_select.format(table_name)
@@ -396,6 +400,7 @@ class FbxObjList:
         return result
 
     def save_to_db(self):
+        print("2.FbxObjList: save_to_db")
         for obx in self._list:
             log('.', end='', flush=True)
             obx.save_to_db()
@@ -971,6 +976,20 @@ class FbxPortForwardings(FbxObjList):
         # init object list
         FbxObjList.init_list(self)
 
+        return
+        print("DELETING ALL Portforwards ...")
+        for pfwd in self._list:
+            print(f"PFWD={pfwd}")
+            print("-----")
+            #print(dir(pfwd))
+            #print("-----")
+
+            # Delete a port forwarding: # DELETE /api/v4/fw/redir/{redir_id}
+            uri = (self._uri+u'{}').format(pfwd.id)
+            print(f"uri=<{uri}>")
+            print(f"DELETE[{pfwd.id}, {pfwd.id_name}]")
+            #resp = self._http.delete(uri, data=payload)
+            resp = self._http.delete(uri)
 
 class FbxDhcpDynamicLease(FbxObj):
     """Call object"""
@@ -1268,6 +1287,7 @@ class FbxContact(FbxObj):
                             self._addresses.append(address)
 
     def save_to_db(self):
+        print("3.FbxContact: save_to_db")
         FbxObj.save_to_db(self)
         if self._numbers != []:
             self._numbers.save_to_db()
@@ -1447,6 +1467,7 @@ class FbxContacts(FbxObjList):
             FbxObjList.init_list(self)
 
     def save_to_db(self):
+        print("4.FbxContacts: save_to_db")
         FbxObjList.save_to_db(self)
         self._groups.save_to_db()
         self._contactGroups.save_to_db()
@@ -1946,3 +1967,5 @@ def main():
 if __name__ == '__main__':
 
     sys.exit(main())
+
+
