@@ -9,6 +9,7 @@ import argparse
 import os
 import sys
 import requests
+import json
 from datetime import timedelta
 
 from fbxostools.fbxosbase import FbxConfiguration, FbxHttp
@@ -1076,7 +1077,24 @@ class FbxServicePortForwarding(FbxService):
             self._pfwds.save_to_db()
 
         if self._conf.resp_as_json and self._conf.resp_archive is False:
-            return self._pfwds.json
+            if self._conf.resp_as_yaml:
+                print('ports:')
+                datas = self._pfwds.json
+                #for dkey, data in datas.items():
+                #    print(dkey, data)
+                result = []
+                for data in datas['result']:
+                   strYaml = "- {"
+                   for keyData in ('comment', 'enabled', 'lan_port', 'wan_port_start', 'wan_port_end', 'lan_ip', 'src_ip', 'ip_proto'):
+                       if keyData in ('enabled', 'lan_port', 'wan_port_start', 'wan_port_end'):
+                           strYaml += f"'{keyData}': {data[keyData]},"
+                       else:
+                           strYaml += f"'{keyData}': '{data[keyData]}'," 
+                   print(f'{strYaml}'+"}")
+                   # result.append("{"+strYaml+"}\n")
+                return { 'result': result}
+            else:
+                return self._pfwds.json
 
         tcount = 0
 
@@ -1457,6 +1475,10 @@ class FreeboxOSCli:
             action='store_true',
             help='simply print Freebox Server reponse in JSON format')
         self._parser.add_argument(
+            '-y',
+            action='store_true',
+            help='simply print Freebox Server reponse in yaml format')
+        self._parser.add_argument(
             '-c',
             nargs=1,
             dest='conf_path',
@@ -1536,7 +1558,7 @@ class FreeboxOSCli:
             default=None,
             dest='load_yaml',
             nargs=1,      # Comma-separated list of Port-forwards
-            help='Load config from yaml')
+            help='Load port forwardind config from yaml file')
         """
         #### TODO:    START - Arguments to implement
         #self._parser.add_argument( '-c', nargs=1, dest='conf_path', default='.', help=...')
@@ -1684,6 +1706,12 @@ class FreeboxOSCli:
             self._ctrl.conf.resp_as_json = True
         del argsdict['j']
 
+        # Activate yaml output if requested
+        if argsdict.get('y'):
+            self._ctrl.conf.resp_as_yaml = True
+            self._ctrl.conf.resp_as_json = True
+        del argsdict['y']
+
         # Activate read from archive
         if argsdict.get('archive'):
             self._ctrl.conf.resp_archive = True
@@ -1763,7 +1791,4 @@ if __name__ == '__main__':
 
     sys.exit(rc)
     """
-
-
-
 
